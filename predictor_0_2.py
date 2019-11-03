@@ -7,7 +7,7 @@ import argparse
 # i.e. 400>1c4< -> 1*16^2 + 12+16 + 4 = 452 >> 2 (right-shift by 2 OR divide by 4)
 #     ..>0001 1100 01<00
 btb = dict()
-cpc_tpc_pred_busy = list()
+cpc_tpc_pred_busy = dict()
 
 logging.basicConfig(filename='cpts561_out.log', filemode='w', level=logging.DEBUG)
 
@@ -16,7 +16,7 @@ parser.add_argument("--codefile", help="provide the file path to file containing
 args = parser.parse_args()
 
 ####### F U N C T I O N S #####################
-def code_to_index(code):
+def get_entry_BTB(code):
     ''' assume input as hex'''
     total = 0
     last_three = code[3:6]
@@ -27,9 +27,16 @@ def code_to_index(code):
         logging.debug("i {} -hex {} -dec {} -total {}".format(i, last_three[i], int(last_three[i], 16), total))
     
     # divide by 4
-    index = total >> 2
-    logging.info("entry number for BTB: {}".format(index))
-    return index
+    entry = total >> 2
+    logging.info("entry number for BTB: {}".format(entry))
+    return entry
+
+def make_BTB(entry, pc, tpc):
+    btb[entry] = [pc, tpc]
+
+def print_BTB():
+    for entry in btb:
+        print("{} --- PC {} - targetPC {}".format(entry, btb[entry][0], btb[entry][1]))
 
 ####### M A I N #####################
 with open(args.codefile, "r") as f:
@@ -38,7 +45,7 @@ with open(args.codefile, "r") as f:
 # strip out \n newline characters
 code = [x.strip() for x in code]
 
-for i in range(0, len(code)-1):
+for i in range(0, len(code)-2):
     icode_plus1 = int(code[i+1], 16)
     icode = int(code[i], 16)
     if icode_plus1 - icode == 4:
@@ -46,4 +53,8 @@ for i in range(0, len(code)-1):
         continue
     else:
         logging.warning("FOUND a Branch for PC:{}".format(code[i]))
-        code_to_index(code[i])
+        entry = get_entry_BTB(code[i])
+        # we know the Target PC is the next instruction hence i+1 or icode_plus1
+        make_BTB(entry, pc=icode, tpc=icode_plus1)
+    
+print_BTB()
