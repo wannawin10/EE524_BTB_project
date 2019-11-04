@@ -139,12 +139,16 @@ for i in range(0, len(code)-2):
         
         # see if PC exists in current BTB
         if in_BTB(entry, hex_pc) == True:
-            # if so update prediction according to state machine
+            # TODO?: add functionality to see if the target PC is same as in BTB
+            # if not then update BTB target address to the new
+            # THIS IS ALREADY BEING DONE as we update target PC every iteration
+
+            # update prediction according to state machine
             pred = update_pred(prev_pred=btb[entry][2], t_nt=TAKEN)
             # we know the Target PC is the next instruction hence code[i+1]
             update_BTB(entry, pc=hex_pc, tpc=hex_pc_plus1, local_pred=pred)
         else:
-            # by default we'll assume
+            # by default we'll assume Strong Taken
             update_BTB(entry, pc=hex_pc, tpc=hex_pc_plus1, local_pred=[1,1])
         
 
