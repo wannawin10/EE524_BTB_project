@@ -10,7 +10,7 @@ btb = dict()
 TAKEN = 1
 NOT_TAKEN = 0
 
-logging.basicConfig(filename='cpts561_out.log', filemode='w', level=logging.DEBUG)
+logging.basicConfig(filename='cpts561_log.log', filemode='w', level=logging.DEBUG)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--codefile", help="provide the file path to file containing opcodes")
@@ -38,12 +38,21 @@ def update_BTB(entry, pc, tpc, local_pred):
     # mod so we only have 1024 entries
     btb[entry % 1024] = [pc, tpc, local_pred]
 
-def print_BTB():
-    for entry in btb:
-        print("{} --- PC {} - targetPC {} - local_pred {}".format(entry, 
-                                                    btb[entry][0], 
-                                                    btb[entry][1],
-                                                    btb[entry][2]))
+def print_BTB(sort):
+    if sort == True:
+        # TODO: this is broken - fix if needed
+        sorted_btb = [val for (key, val) in sorted(btb.items())]
+        for entry in sorted_btb:
+            print("PC {} - targetPC {} - local_pred {}".format(
+                                                        sorted_btb[0], 
+                                                        sorted_btb[1],
+                                                        sorted_btb[2]))
+    elif sort == False:
+        for entry in btb:
+            print("{} --- PC {} - targetPC {} - local_pred {}".format(entry, 
+                                                        btb[entry][0], 
+                                                        btb[entry][1],
+                                                        btb[entry][2]))
 
 def in_BTB(entry, pc):
     if entry in btb:
@@ -153,4 +162,4 @@ for i in range(0, len(code)-2):
         
 
 # printing final state of BTB
-print_BTB()
+print_BTB(sort=False)
